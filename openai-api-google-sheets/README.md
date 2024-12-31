@@ -7,6 +7,6 @@ Google Account
 Open AI Account (Pay as you go or Monthly)
 
 ### Reference URLs:
-[Open AI API Docs](https://platform.openai.com/docs/api-reference/introduction) 
-[UrlFetchApp Class Docs](https://developers.google.com/apps-script/reference/url-fetch/url-fetch-app) 
+* [Open AI API Docs](https://platform.openai.com/docs/api-reference/introduction) 
+* [UrlFetchApp Class Docs](https://developers.google.com/apps-script/reference/url-fetch/url-fetch-app) 
 Chat Completions API Endpoint: (https://api.openai.com/v1/chat/completions) - may change in future, see quickstart [here](https://platform.openai.com/docs/quickstart)
