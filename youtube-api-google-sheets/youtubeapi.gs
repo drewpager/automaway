@@ -55,29 +55,27 @@ function displayMyVideos(title, duration, views) {
 }
 
 
-function parseISODuration(duration) {
-   // Use a regex to extract hours, minutes, and seconds
-   const regex = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
-   const matches = duration.match(regex);
+function parseISODuration(input) {
+   const timeRegex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
+  const matches = input.match(timeRegex);
 
+  if (!matches) {
+    return "Invalid input format"; 
+  }
 
-   if (!matches) {
-       throw new Error('Invalid ISO 8601 duration format');
-   }
+  const hours = parseInt(matches[1] || 0, 10);
+  const minutes = parseInt(matches[2] || 0, 10);
+  const seconds = parseInt(matches[3] || 0, 10);
 
+  const formattedHours = String(hours).padStart(2, '0');
+  const formattedMinutes = String(minutes).padStart(2, '0');
+  const formattedSeconds = String(seconds).padStart(2, '0');
 
-   const hours = matches[1] ? parseInt(matches[1], 10) : 0;
-   const minutes = matches[2] ? parseInt(matches[2], 10) : 0;
-   const seconds = matches[3] ? parseInt(matches[3], 10) : 0;
-
-
-   // Build a human-readable format
-   let readableFormat = '';
-   if (hours > 0) readableFormat += `${hours}:`;
-   if (minutes > 0) readableFormat += `${minutes}:`;
-   if (seconds > 0) readableFormat += `${seconds}`;
-
-
-   return readableFormat.trim();
+  if (hours > 0) {
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  } else if (minutes > 0) {
+    return `${formattedMinutes}:${formattedSeconds}`;
+  } else {
+    return `00:${formattedSeconds}`; 
+  }
 }
-
