@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+</head>
+<body>
+  <h1>Select Languages</h1>
+
+  <label for="sourceLang">Source Language:</label>
+  <select id="sourceLang">
+    <option value="en">English</option>
+    <option value="es">Spanish</option>
+    <option value="fr">French</option>
+    <option value="de">German</option>
+    <option value="other">Other</option>
+  </select><br><br>
+
+  <label for="targetLang">Target Language:</label>
+  <select id="targetLang">
+    <option value="es">Spanish</option>
+    <option value="fr">French</option>
+    <option value="de">German</option>
+    <option value="en">English</option>
+    <option value="other">Other</option>
+  </select><br><br>
+
+  <button onclick="saveLanguages()">Save Languages</button>
+
+  <script>
+    function saveLanguages() {
+      var sourceLang = document.getElementById("sourceLang").value;
+      var targetLang = document.getElementById("targetLang").value;
+
+      google.script.run.withSuccessHandler(onSuccess).setLanguages(sourceLang, targetLang)
+    }
+
+    function onSuccess(message) {
+      var sourceLang = document.getElementById("sourceLang").value;
+      var targetLang = document.getElementById("targetLang").value;
+      alert(`${message} with Source Language set to ${sourceLang} and Target Language set to ${targetLang}`); // Show the success message
+      google.script.host.close(); // Close the sidebar after saving
+    }
+
+  </script>
+</body>
+</html>
