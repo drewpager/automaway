@@ -77,17 +77,6 @@ function translateContent(sourceElement, targetElement, sourceLanguage, targetLa
 
       translateContent(sourceChild, targetChild, sourceLanguage,targetLanguage); // Now translate and populate the cleared element.
       break;
-    case DocumentApp.ElementType.TABLE:
-      var numRows = sourceElement.getNumRows();
-      var numCols = sourceElement.getNumColumns();
-      for (var i = 0; i < numRows; i++) {
-        for (var j = 0; j < numCols; j++) {
-          var sourceCell = sourceElement.getCell(i, j);
-          var targetCell = targetElement.getCell(i, j);
-          translateContent(sourceCell, targetCell, sourceLanguage,targetLanguage);
-        }
-      }
-      break;
     case DocumentApp.ElementType.INLINE_IMAGE:
     case DocumentApp.ElementType.IMAGE:
       // Copy images directly.  Translation not applicable.
@@ -210,4 +199,3 @@ function getParentFolder(sourceDocId){
     return folders.next().getId();
   }
 }
-
