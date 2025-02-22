@@ -1,7 +1,7 @@
 function onOpen() {
-  DocumentApp.getUi().createMenu("Translate Document")
+  DocumentApp.getUi().createMenu("Localize Document With AI")
     .addItem("Step 1: Select Languages", "showSidebar")
-    .addItem("Step 2: Translate", "runTranslate")
+    .addItem("Step 2: Localize", "runTranslate")
     .addToUi();
 }
 
@@ -111,10 +111,77 @@ function translateContent(sourceElement, targetElement, sourceLanguage, targetLa
   }
 }
 
+function geminiLocalizationAPI(text, sourceLang, tgtLang) {
+  const API_KEY = "YOUR_GEMINI_API_KEY"
+  // The endpoint URL for generating content
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent?key=' + API_KEY;
+
+  const payload = {
+    "contents": [{
+      "parts": [{
+        "text": `Can you localize the following ${sourceLang} text into ${tgtLang} and only return the most likely single translation as a response with no additional context:
+        
+        ${text}`
+      }]
+    }]
+  };
+
+  const options = {
+    'method' : 'post',
+    'contentType': 'application/json',
+    'payload' : JSON.stringify(payload)
+  };
+
+  const response = UrlFetchApp.fetch(url, options);
+
+  if (response.getResponseCode() === 200) {
+    const content = JSON.parse(response.getContentText());
+    const translation = content.candidates[0].content.parts[0].text;
+    return translation
+  } else {
+    return Error(`Something broke here!`)
+  }
+}
+
 function translateText(text, sourceLanguage, targetLanguage) {
   // Use the LanguageApp service for translation.
+  // Persistent storage for rate limiting data.  Properties Service is good for this.
+  const properties = PropertiesService.getScriptProperties();
+  let callCount = properties.getProperty('callCount') || 0;
+  let lastCallTime = properties.getProperty('lastCallTime') || 0;
+
+  const now = Date.now();
+  const minute = 60 * 1000; // Milliseconds in a minute
+
+  // Check if we need to reset the counter
+  if (now - lastCallTime >= minute) {
+    callCount = 0;
+    lastCallTime = now;
+    properties.setProperty('callCount', callCount);
+    properties.setProperty('lastCallTime', lastCallTime);
+  }
+
+  // Check if we've hit the rate limit
+  if (callCount >= 30) {
+    const timeToWait = minute - (now - lastCallTime);
+    Logger.log(`Rate limit hit. Waiting ${timeToWait / 1000} seconds.`);
+    Utilities.sleep(timeToWait); // Wait until the next minute
+    callCount = 0; // Reset the counter since we waited a full minute.
+    lastCallTime = Date.now(); // Update last call time after waiting.
+    properties.setProperty('callCount', callCount);
+    properties.setProperty('lastCallTime', lastCallTime);
+  }
+
+  // Make the API call
   try {
-    return LanguageApp.translate(text, sourceLanguage, targetLanguage);
+    let translation = geminiLocalizationAPI(text, sourceLanguage, targetLanguage)
+    callCount++;
+    properties.setProperty('callCount', callCount);
+    if (translation.length > 0) {
+      return translation;
+    } else {
+      Logger.log("Translation length error!");  
+    }
   } catch (error) {
     Logger.log("Translation error: " + error);
     return text; // Return original text if translation fails.
@@ -132,8 +199,8 @@ function runTranslate() {
   var targetLanguage = languages.target;
   var sourceDocId = DocumentApp.getActiveDocument().getId();
 
-  var translatedDocId = translateAndCopyDocument(sourceDocId, sourceLanguage, targetLanguage);
-  DocumentApp.getUi().alert("Translated document ID: " + translatedDocId);
+  var localizedDocId = translateAndCopyDocument(sourceDocId, sourceLanguage, targetLanguage);
+  DocumentApp.getUi().alert("Localized document ID: " + localizedDocId);
 }
 
 function getParentFolder(sourceDocId){
@@ -143,3 +210,4 @@ function getParentFolder(sourceDocId){
     return folders.next().getId();
   }
 }
+
