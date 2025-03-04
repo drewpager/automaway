@@ -40,12 +40,13 @@ function getSERPAvg() {
     const num = JSON.parse(res)
 
     const serp = num.positions;
+    const organicSerp = serp.filter(s => s.type.includes("organic"))
 
     const numericFields = ["top_keyword_volume", "value", "traffic", "domain_rating", "refdomains", "keywords"];
     const averages = {};
 
     numericFields.forEach(field => {
-      const values = serp
+      const values = organicSerp
         .map(item => item[field])
         .filter(value => typeof value === 'number' && value !== null);
 
@@ -57,7 +58,7 @@ function getSERPAvg() {
       }
     });
 
-    if (serp.length === 0) {
+    if (organicSerp.length === 0) {
       sheet.getRange(row+j, drColumn+1).setValue(`SERP not found`)
       sheet.getRange(row+j, trafficColumn+1).setValue(`SERP not found`)
       sheet.getRange(row+j, refsColumn+1).setValue(`SERP not found`)
@@ -108,13 +109,13 @@ function getSERP() {
   const num = JSON.parse(res)
 
   const serp = num.positions;
-  Logger.log(serp)
+  const organicSerp = serp.filter(s => s.type.includes("organic"))
 
-  if (serp.length === 0) {
+  if (organicSerp.length === 0) {
     sheet.getRange(row, urlColumn+1).setValue(`SERP not found`)
   }
 
-  serp.map((item, index) => {
+  organicSerp.map((item, index) => {
     if (item.url === null || item.traffic === null) {
       return;
     } else {
